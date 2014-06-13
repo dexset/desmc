@@ -15,7 +15,7 @@ protected:
     Classifier classifier;
     Complexer complexer;
     Destributor destributor;
-    GroupTrackerFactory factory;
+    MultiTrackerFactory factory;
 
 public:
     this( Tracker[] trs, MultiTrackerFactory gtf )
@@ -36,7 +36,7 @@ public:
     {
         auto skels = getReadySkeletons();
         destributeSkeletonsToHandlers( skels );
-        return map!( a => a.user )( filter!( a => a.updated )(handlers) );
+        return getUpdatedUsers();
     }
 
 protected:
@@ -50,9 +50,10 @@ protected:
 
     Skeleton[][] getSkeletonsByTrackers()
     {
+        import std.array;
         Skeleton[][] ret;
         foreach( tracker; trackers )
-            ret ~= map!(a=>a.skel)(tracker.getUsers());
+            ret ~= array( map!(a=>a.skel)(tracker.getUsers()) );
         return ret;
     }
 
@@ -82,5 +83,13 @@ protected:
             if( !uh.isOverdue )
                 good ~= uh;
         handlers = good;
+    }
+
+    User[] getUpdatedUsers()
+    {
+        User[] ret;
+        foreach( uh; filter!( a => a.updated )(handlers) )
+            ret ~= uh.user;
+        return ret;
     }
 }

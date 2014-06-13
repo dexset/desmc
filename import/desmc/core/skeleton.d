@@ -3,12 +3,12 @@ module desmc.core.skeleton;
 import std.stdio;
 import std.string;
 import std.algorithm;
-import desmath.linear;
+public import desmath.linear;
 
 struct Joint
 {
     vec3 pos;
-    float rel;
+    float rel = 0.0f;
 }
 
 struct Skeleton
@@ -35,11 +35,13 @@ struct Skeleton
         RIGHT_FOOT
     }
 
-    private Joint[JointID.max-JointID.min] joints;
+    enum JointCount = JointID.max-JointID.min+1;
+
+    private Joint[JointCount] joints;
 
     mixin( accessArray!("joints",Joint,JointID) );
 
-    auto transform( in mat4 mtr )
+    auto transform( in mat4 mtr ) const
     {
         Skeleton ret;
         foreach( i, j; joints )
@@ -47,7 +49,124 @@ struct Skeleton
         return ret;
     }
 
-    Joint[] allJoints() const { return joints.dup; }
+    vec3 center() const
+    {
+        vec3 p;
+        foreach( joint; joints )
+            p += joint.pos;
+        return p / joints.length;
+    }
+
+    Joint[JointCount] allJoints() const { return joints; }
+    void setJoints( in Joint[JointCount] j ) { joints = j; }
+
+    static Skeleton fromJoints( in Joint[JointCount] jj )
+    {
+        Skeleton ret;
+        ret.setJoints( jj );
+        return ret;
+    }
+}
+
+version(unittest)
+{
+    Joint[Skeleton.JointCount] pose_norm;
+    static this()
+    {
+        pose_norm[Skeleton.JointID.HEAD] = Joint( vec3(0,0,2), 1.0f );
+        pose_norm[Skeleton.JointID.NECK] = Joint( vec3(0,0,1.8), 1.0f );
+
+        pose_norm[Skeleton.JointID.LEFT_SHOULDER]  = Joint( vec3(0, 0.2,1.7), 1.0f );
+        pose_norm[Skeleton.JointID.RIGHT_SHOULDER] = Joint( vec3(0,-0.2,1.7), 1.0f );
+        pose_norm[Skeleton.JointID.LEFT_ELBOW]     = Joint( vec3(0, 0.3,1.2), 1.0f );
+        pose_norm[Skeleton.JointID.RIGHT_ELBOW]    = Joint( vec3(0,-0.3,1.2), 1.0f );
+        pose_norm[Skeleton.JointID.LEFT_HAND]      = Joint( vec3(0.2,0.3,0.9), 1.0f );
+        pose_norm[Skeleton.JointID.RIGHT_HAND]     = Joint( vec3(0.2,-0.3,0.9), 1.0f );
+
+        pose_norm[Skeleton.JointID.TORSO] = Joint( vec3(0,0,1.2), 1.0f );
+
+        pose_norm[Skeleton.JointID.LEFT_HIP] = Joint( vec3(0,0.15,1), 1.0f );
+        pose_norm[Skeleton.JointID.RIGHT_HIP] = Joint( vec3(0,-0.15,1), 1.0f );
+        pose_norm[Skeleton.JointID.LEFT_KNEE] = Joint( vec3(0,0.15,0.5), 1.0f );
+        pose_norm[Skeleton.JointID.RIGHT_KNEE] = Joint( vec3(0,-0.15,0.5), 1.0f );
+        pose_norm[Skeleton.JointID.LEFT_FOOT] = Joint( vec3(0,0.15,0), 1.0f );
+        pose_norm[Skeleton.JointID.RIGHT_FOOT] = Joint( vec3(0,-0.15,0), 1.0f );
+    }
+}
+
+unittest
+{
+    auto ts = Skeleton.fromJoints( pose_norm );
+    assert( pose_norm[Skeleton.JointID.HEAD] == ts.head );
+}
+
+Skeleton skeleton_mlt( in Skeleton s, float v )
+{
+    auto s_joints = s.allJoints();
+    foreach( ref joint; s_joints )
+    {
+        joint.pos *= v;
+        joint.rel *= v;
+    }
+    return Skeleton.fromJoints( s_joints );
+}
+
+unittest
+{
+    auto ts = Skeleton.fromJoints( pose_norm );
+    auto mts = skeleton_mlt( ts, 10 );
+    assert( pose_norm[Skeleton.JointID.HEAD].pos * 10 == mts.head.pos );
+}
+
+Skeleton skeleton_add( in Skeleton a, in Skeleton b )
+{
+    auto a_joints = a.allJoints();
+    auto b_joints = b.allJoints();
+    foreach( i, ref joint; a_joints )
+    {
+        joint.pos += b_joints[i].pos;
+        joint.rel += b_joints[i].rel;
+    }
+    return Skeleton.fromJoints( a_joints );
+}
+
+unittest
+{
+    auto ts1 = Skeleton.fromJoints( pose_norm );
+    auto ts2 = Skeleton.fromJoints( pose_norm );
+    auto rts = skeleton_add( ts1, ts2 );
+    assert( pose_norm[Skeleton.JointID.HEAD].pos * 2 == rts.head.pos );
+}
+
+Skeleton skeleton_diff( in Skeleton a, in Skeleton b )
+{
+    auto a_joints = a.allJoints();
+    auto b_joints = b.allJoints();
+    foreach( i, ref joint; a_joints )
+    {
+        joint.pos -= b_joints[i].pos;
+        joint.rel -= b_joints[i].rel;
+    }
+    return Skeleton.fromJoints( a_joints );
+}
+
+unittest
+{
+    auto ts1 = Skeleton.fromJoints( pose_norm );
+    auto ts2 = skeleton_mlt( ts1, 2 );
+    auto rts = skeleton_diff( ts2, ts1 );
+    assert( pose_norm[Skeleton.JointID.HEAD].pos == rts.head.pos );
+}
+
+Skeleton skeleton_div( in Skeleton s, float v )
+{ return skeleton_mlt( s, 1.0f / v ); }
+
+Skeleton skeleton_offset( in Skeleton a, in vec3 offset )
+{
+    auto a_joints = a.allJoints();
+    foreach( ref joint; a_joints )
+        joint.pos += offset;
+    return Skeleton.fromJoints( a_joints );
 }
 
 private

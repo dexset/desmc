@@ -40,7 +40,7 @@ interface Destributor
     Skeleton[] opCall( UserHandler[], in Skeleton[] );
 }
 
-interface GroupTrackerFactory
+interface MultiTrackerFactory
 {
     @property
     {

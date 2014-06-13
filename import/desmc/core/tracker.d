@@ -8,21 +8,36 @@ interface Tracker
     User[] getUsers();
 }
 
-interface TransformTracker : Tracker
+version(unittest)
+{
+    final class FakeTracker : Tracker
+    {
+        private User[] users;
+        this( in vec3 offset=vec3(0,0,0) )
+        {
+            auto np = Skeleton.fromJoints( pose_norm );
+            users ~= User( 0, skeleton_offset( np, vec3(0,2,0) + offset ) );
+            users ~= User( 0, skeleton_offset( np, vec3(1,-1,0) + offset ) );
+        }
+        User[] getUsers() { return users; }
+    }
+}
+
+class TransformTracker : Tracker
 {
 protected:
-    @property User[] users();
-    Skeleton transform( in Skeleton );
+    abstract @property User[] users();
+    abstract Skeleton transform( in Skeleton );
 
 public:
     final User[] getUsers()
     {
         auto src = users;
         User[] dst;
-        dst = src.length;
+        dst.length = src.length;
 
         foreach( i, user; src )
-            dst[i] = User( user.id, transform( skel ) );
+            dst[i] = User( user.id, transform( user.skel ) );
 
         return dst;
     }
@@ -31,17 +46,17 @@ public:
 class MatrixTransformTracker : TransformTracker
 {
 protected:
-    @property User[] users()
+    override @property User[] users()
     { return source.getUsers(); }
 
-    Skeleton transform( in Skeleton skel )
+    override Skeleton transform( in Skeleton skel )
     { return skel.transform( mtr ); }
 
     Tracker source;
     mat4 mtr;
 
 public:
-    this( Tracker src, in mtr4 tr )
+    this( Tracker src, in mat4 tr )
     {
         source = src;
         mtr = tr;
@@ -55,4 +70,15 @@ public:
         mat4 transformMatrix() const { return mtr; }
         void transformMatrix( in mat4 tr ) { mtr = tr; }
     }
+}
+
+unittest
+{
+    import desmath.linear.camera;
+    auto mtr = _lookAt( vec3(0,-1,0), vec3(0,-1,-1), vec3(0,1,0) );
+    auto ft = new FakeTracker;
+    auto mtt = new MatrixTransformTracker( ft, mtr );
+    auto uu = ft.getUsers();
+    auto ut = mtt.getUsers();
+    assert( ut[0].skel.head.pos == (mtr * vec4(uu[0].skel.head.pos,1.0) ).xyz );
 }
