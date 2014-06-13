@@ -71,6 +71,7 @@ struct Skeleton
 version(unittest)
 {
     Joint[Skeleton.JointCount] pose_norm;
+    Skeleton utest_skeleton;
     static this()
     {
         pose_norm[Skeleton.JointID.HEAD] = Joint( vec3(0,0,2), 1.0f );
@@ -91,6 +92,16 @@ version(unittest)
         pose_norm[Skeleton.JointID.RIGHT_KNEE] = Joint( vec3(0,-0.15,0.5), 1.0f );
         pose_norm[Skeleton.JointID.LEFT_FOOT] = Joint( vec3(0,0.15,0), 1.0f );
         pose_norm[Skeleton.JointID.RIGHT_FOOT] = Joint( vec3(0,-0.15,0), 1.0f );
+        utest_skeleton = Skeleton.fromJoints( pose_norm );
+    }
+
+    Skeleton[] getFakeSkeletons( vec3 global_offset = vec3(0,0,0),
+            vec3[] offsets = [ vec3(0,2,0), vec3(1,-1,0) ] )
+    {
+        Skeleton[] ret;
+        foreach( i, offset; offsets )
+            ret ~= skeleton_offset( utest_skeleton, global_offset + offset );
+        return ret;
     }
 }
 

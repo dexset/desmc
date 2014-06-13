@@ -14,11 +14,7 @@ version(unittest)
     {
         private User[] users;
         this( in vec3 offset=vec3(0,0,0) )
-        {
-            auto np = Skeleton.fromJoints( pose_norm );
-            users ~= User( 0, skeleton_offset( np, vec3(0,2,0) + offset ) );
-            users ~= User( 0, skeleton_offset( np, vec3(1,-1,0) + offset ) );
-        }
+        { users = getFakeUsers( offset, [ vec3(0,2,0), vec3(1,-1,0) ] ); }
         User[] getUsers() { return users; }
     }
 }
