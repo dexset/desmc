@@ -156,6 +156,7 @@ unittest
 {
     auto ts = Skeleton.fromJoints( pose_norm );
     assert( pose_norm[Skeleton.JointID.HEAD] == ts.head );
+    assert( pose_norm[Skeleton.JointID.RIGHT_HAND] == ts.rightHand );
 }
 
 Skeleton skeleton_mlt( in Skeleton s, float v )
