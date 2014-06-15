@@ -24,6 +24,11 @@ public:
         setFactory( gtf );
     }
 
+    void setTrackers( Tracker[] trs )
+    {
+        trackers = trs;
+    }
+
     void setFactory( MultiTrackerFactory gtf )
     {
         factory = gtf;
