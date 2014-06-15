@@ -8,7 +8,7 @@ public import desmath.linear;
 struct Joint
 {
     vec3 pos;
-    float rel = 0.0f;
+    float qual = 0.0f;
 }
 
 struct Skeleton
@@ -45,7 +45,7 @@ struct Skeleton
     {
         Skeleton ret;
         foreach( i, j; joints )
-            ret.joints[i] = Joint( (mtr * vec4(j.pos,1.0)).xyz, j.rel );
+            ret.joints[i] = Joint( (mtr * vec4(j.pos,1.0)).xyz, j.qual );
         return ret;
     }
 
@@ -165,7 +165,7 @@ Skeleton skeleton_mlt( in Skeleton s, float v )
     foreach( ref joint; s_joints )
     {
         joint.pos *= v;
-        joint.rel *= v;
+        joint.qual *= v;
     }
     return Skeleton.fromJoints( s_joints );
 }
@@ -184,7 +184,7 @@ Skeleton skeleton_add( in Skeleton a, in Skeleton b )
     foreach( i, ref joint; a_joints )
     {
         joint.pos += b_joints[i].pos;
-        joint.rel += b_joints[i].rel;
+        joint.qual += b_joints[i].qual;
     }
     return Skeleton.fromJoints( a_joints );
 }
@@ -204,7 +204,7 @@ Skeleton skeleton_diff( in Skeleton a, in Skeleton b )
     foreach( i, ref joint; a_joints )
     {
         joint.pos -= b_joints[i].pos;
-        joint.rel -= b_joints[i].rel;
+        joint.qual -= b_joints[i].qual;
     }
     return Skeleton.fromJoints( a_joints );
 }

@@ -1,6 +1,7 @@
-module desmc.multitrack.base;
+module desmc.multitrack.model.base;
 
 import desmc.multitrack.model;
+import desmc.multitrack.model.util;
 
 /+ TODO: WIP
 
@@ -8,7 +9,7 @@ class BaseClassifier : Classifier
 {
     Skeleton[][] opCall( in Skeleton[][] )
     {
-        //TODO
+
     }
 }
 

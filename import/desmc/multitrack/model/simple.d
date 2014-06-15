@@ -1,60 +1,27 @@
-module desmc.multitrack.simplemodel;
+module desmc.multitrack.model.simple;
 
 import desmc.multitrack.model;
 import std.algorithm;
-
-T[] plainArray(T)( in T[][] arr )
-{
-    T[] ret;
-    foreach( p; arr )
-        ret ~= p;
-    return ret;
-}
+import desmc.multitrack.model.util;
 
 class SimpleClassifier : Classifier
 {
-    static class Class
-    {
-        Skeleton mean;
-        Skeleton[] array;
-
-        float diff( in Skeleton s )
-        {
-            auto mj = mean.allJoints();
-            auto sj = s.allJoints();
-
-            float k = 0.0f;
-
-            foreach( i, ref joint; mj )
-                k += (joint.pos - sj[i].pos).len;
-
-            return k;
-        }
-
-        void append( in Skeleton s )
-        {
-            auto n = array.length;
-            mean = skeleton_div( skeleton_add( skeleton_mlt( mean, n ), s ), n+1 ); 
-            array ~= s;
-        }
-    }
-
     Skeleton[][] opCall( in Skeleton[][] skel_arr )
     {
         auto red = plainArray( skel_arr );
-        Class[] classes;
+        ClassifierClass[] classes;
         foreach( skel; red )
         {
             auto res = findClass( classes, skel );
-            Class cur = processResult( classes, res[0], res[1] );
+            auto cur = processResult( classes, res[0], res[1] );
             cur.append( skel );
         }
         return getSkeletons( classes );
     }
 
-    static auto findClass( Class[] classes, in Skeleton skel )
+    static auto findClass( ClassifierClass[] classes, in Skeleton skel )
     {
-        Class fnd;
+        ClassifierClass fnd;
         float min_diff = float.max;
         foreach( cls; classes )
         {
@@ -68,19 +35,20 @@ class SimpleClassifier : Classifier
         return tuple( fnd, min_diff );
     }
 
-    static Class processResult( ref Class[] classes, Class cls, float delta )
+    static ClassifierClass processResult( ref ClassifierClass[] classes,
+                                              ClassifierClass cls, float delta )
     {
         float cls_epsilon = 4.0f;
         auto ret = cls;
         if( cls is null || delta > cls_epsilon )
         {
-            ret = new Class;
+            ret = new ClassifierClass;
             classes ~= ret;
         }
         return ret;
     }
 
-    static auto getSkeletons( Class[] classes )
+    static auto getSkeletons( ClassifierClass[] classes )
     {
         Skeleton[][] ret;
         foreach( cls; classes )
@@ -99,10 +67,8 @@ unittest
 
     auto by_group = tsc( by_tracker );
 
-    /+
-    printSkeletonsDArray( by_tracker );
-    printSkeletonsDArray( by_group );
-    +/
+    //printSkeletonsDArray( by_tracker );
+    //printSkeletonsDArray( by_group );
 
     assert( by_group[0][0] == by_tracker[0][0] );
     assert( by_group[0][1] == by_tracker[1][0] );
