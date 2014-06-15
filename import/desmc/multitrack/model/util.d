@@ -3,6 +3,7 @@ import std.algorithm;
 import std.array;
 
 import desmc.core;
+import std.math;
 
 T[] plainArray(T)( in T[][] arr )
 {
@@ -97,7 +98,6 @@ unittest
     auto b = getFakeSkeletons(vec3(0,0.1,0),[vec3(0,0,0)])[0];
 
     auto cf = new ClassifierClass;
-    import std.math;
     assert( abs( cf.diff(a) - float.max ) < 1e-12 );
     cf.append( a );
     assert( cf.diff(b) > 0.0f && cf.diff(b) < 0.1 );
