@@ -40,7 +40,7 @@ class ClassifierClass
         auto offset = calcOffsetInIndexes( mj, sj, hiq );
         auto dp = calcDistibution( offset );
 
-        auto res = dp[0].len2 + dp[1].len;
+        auto res = dp[0].len + sqrt(dp[1].len);
         res = (res!=res) ? float.max : res;
 
         return res;
