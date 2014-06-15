@@ -60,6 +60,53 @@ struct Skeleton
     Joint[JointCount] allJoints() const { return joints; }
     void setJoints( in Joint[JointCount] j ) { joints = j; }
 
+    vec3[] allBones() const
+    {
+        vec3[] ret;
+        ret ~= joints[JointID.HEAD].pos;
+        ret ~= joints[JointID.NECK].pos;
+
+        ret ~= joints[JointID.NECK].pos;
+        ret ~= joints[JointID.LEFT_SHOULDER].pos;
+
+        ret ~= joints[JointID.NECK].pos;
+        ret ~= joints[JointID.RIGHT_SHOULDER].pos;
+
+        ret ~= joints[JointID.RIGHT_ELBOW].pos;
+        ret ~= joints[JointID.RIGHT_SHOULDER].pos;
+
+        ret ~= joints[JointID.LEFT_ELBOW].pos;
+        ret ~= joints[JointID.LEFT_SHOULDER].pos;
+
+        ret ~= joints[JointID.LEFT_ELBOW].pos;
+        ret ~= joints[JointID.LEFT_HAND].pos;
+
+        ret ~= joints[JointID.RIGHT_ELBOW].pos;
+        ret ~= joints[JointID.RIGHT_HAND].pos;
+
+        ret ~= joints[JointID.TORSO].pos;
+        ret ~= joints[JointID.NECK].pos;
+
+        ret ~= joints[JointID.TORSO].pos;
+        ret ~= joints[JointID.LEFT_HIP].pos;
+
+        ret ~= joints[JointID.TORSO].pos;
+        ret ~= joints[JointID.RIGHT_HIP].pos;
+
+        ret ~= joints[JointID.RIGHT_KNEE].pos;
+        ret ~= joints[JointID.RIGHT_HIP].pos;
+
+        ret ~= joints[JointID.LEFT_KNEE].pos;
+        ret ~= joints[JointID.LEFT_HIP].pos;
+
+        ret ~= joints[JointID.LEFT_KNEE].pos;
+        ret ~= joints[JointID.LEFT_FOOT].pos;
+
+        ret ~= joints[JointID.RIGHT_KNEE].pos;
+        ret ~= joints[JointID.RIGHT_FOOT].pos;
+        return ret;
+    }
+
     static Skeleton fromJoints( in Joint[JointCount] jj )
     {
         Skeleton ret;
