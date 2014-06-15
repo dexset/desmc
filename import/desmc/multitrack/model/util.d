@@ -10,6 +10,15 @@ T[] plainArray(T)( in T[][] arr )
     return array( reduce!((r,a)=>(r~=a))( ret, arr ) );
 }
 
+size_t[] getHighQualityIndexes( in Joint[] a, in Joint[] b, float min_qual )
+{
+    size_t[] res;
+    foreach( i; 0 .. a.length )
+        if( a[i].qual > min_qual && b[i].qual > min_qual )
+            res ~= i;
+    return res;
+}
+
 class ClassifierClass
 {
     float min_quality = 0.5;
@@ -17,12 +26,17 @@ class ClassifierClass
     Skeleton mean;
     Skeleton[] array;
 
+    this( float min_qual=0.5 )
+    {
+        min_quality = min_qual;
+    }
+
     float diff( in Skeleton s )
     {
         auto mj = mean.allJoints();
         auto sj = s.allJoints();
 
-        auto hiq = getHighQualityIndexes( mj, sj );
+        auto hiq = getHighQualityIndexes( mj, sj, min_quality );
         auto offset = calcOffsetInIndexes( mj, sj, hiq );
         auto dp = calcDistibution( offset );
 
@@ -39,7 +53,7 @@ class ClassifierClass
 
         if( array.length )
         {
-            auto hiq = getHighQualityIndexes( mj, sj );
+            auto hiq = getHighQualityIndexes( mj, sj, min_quality );
             auto offset = calcOffsetInIndexes( mj, sj, hiq );
             auto dp = calcDistibution( offset );
 
@@ -54,15 +68,6 @@ class ClassifierClass
         else mean = s;
 
         array ~= s;
-    }
-
-    size_t[] getHighQualityIndexes( in Joint[] a, in Joint[] b )
-    {
-        size_t[] res;
-        foreach( i; 0 .. a.length )
-            if( a[i].qual > min_quality && b[i].qual > min_quality )
-                res ~= i;
-        return res;
     }
 
     vec3[] calcOffsetInIndexes( in Joint[] a, in Joint[] b, size_t[] hiq )

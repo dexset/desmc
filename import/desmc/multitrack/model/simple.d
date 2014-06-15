@@ -4,8 +4,21 @@ import desmc.multitrack.model;
 import std.algorithm;
 import desmc.multitrack.model.util;
 
+struct SimpleClassifierParams
+{
+    float min_point_quality=0.5;
+    float one_class_epsilon=1e5;
+}
+
 class SimpleClassifier : Classifier
 {
+    SimpleClassifierParams params;
+
+    this( in SimpleClassifierParams scp = SimpleClassifierParams() )
+    {
+        params = scp;
+    }
+
     Skeleton[][] opCall( in Skeleton[][] skel_arr )
     {
         auto red = plainArray( skel_arr );
@@ -35,17 +48,21 @@ class SimpleClassifier : Classifier
         return tuple( fnd, min_diff );
     }
 
-    static ClassifierClass processResult( ref ClassifierClass[] classes,
+    ClassifierClass processResult( ref ClassifierClass[] classes,
                                               ClassifierClass cls, float delta )
     {
-        float cls_epsilon = 4.0f;
         auto ret = cls;
-        if( cls is null || delta > cls_epsilon )
+        if( cls is null || delta > params.one_class_epsilon )
         {
-            ret = new ClassifierClass;
+            ret = newClassifierClass();
             classes ~= ret;
         }
         return ret;
+    }
+
+    auto newClassifierClass()
+    {
+        return new ClassifierClass( params.min_point_quality );
     }
 
     static auto getSkeletons( ClassifierClass[] classes )
@@ -59,7 +76,7 @@ class SimpleClassifier : Classifier
 
 unittest
 {
-    auto tsc = new SimpleClassifier;
+    auto tsc = new SimpleClassifier( SimpleClassifierParams(0.5,4) );
 
     Skeleton[][] by_tracker;
     by_tracker ~= getFakeSkeletons(vec3(0,0,.1));
@@ -76,8 +93,20 @@ unittest
     assert( by_group[1][1] == by_tracker[1][1] );
 }
 
+struct SimpleComplexerParams
+{
+    // TODO: params 
+}
+
 class SimpleComplexer : Complexer
 {
+    SimpleComplexerParams params;
+
+    this( in SimpleComplexerParams scp = SimpleComplexerParams() )
+    {
+        params = scp;
+    }
+
     Skeleton[] opCall( in Skeleton[][] skels )
     {
         Skeleton[] result;
@@ -111,19 +140,24 @@ unittest
     assert( us0 == cmpl );
 }
 
+struct SimpleUserHandlerParams
+{
+    float max_transform_dist;
+}
+
 class SimpleUserHandler: UserHandler
 {
 protected:
     bool is_overdue = true;
     User self_user;
-    float max_dist2;
+    SimpleUserHandlerParams params;
 public:
 
-    this( User fuser, float max_dist )
+    this( User fuser, in SimpleUserHandlerParams suhp )
     {
         self_user = fuser;
         is_overdue = false;
-        max_dist2 = max_dist ^^ 2;
+        params = suhp;
     }
 
     @property 
@@ -143,6 +177,7 @@ public:
 
     float calcTransformPossibility( in Skeleton s ) const
     {
+        auto max_dist2 = params.max_transform_dist ^^ 2;
         auto dist2 = (self_user.skel.torso.pos - s.torso.pos).len2;
         if( dist2 > max_dist2 ) return 0.0f;
         return 1.0f / ( dist2 + 0.0001f );
@@ -152,7 +187,7 @@ public:
 unittest
 {
     auto us0 = getFakeSkeletons(vec3(0,0,0),[vec3(0,0,0)])[0];
-    auto tsuh = new SimpleUserHandler( User(0,us0), 1.0f );
+    auto tsuh = new SimpleUserHandler( User(0,us0), SimpleUserHandlerParams(1.0f) );
     assert( tsuh.updated );
     assert( tsuh.user == User(0,us0) );
     assert( !tsuh.isOverdue );
@@ -164,8 +199,20 @@ unittest
     assert( tctpn < 1.0f / 0.0001f );
 }
 
+struct SimpleDestributorParams
+{
+    // TODO: params
+}
+
 class SimpleDestributor : Destributor
 {
+    SimpleDestributorParams params;
+
+    this( in SimpleDestributorParams sdp = SimpleDestributorParams() )
+    {
+        params = sdp;
+    }
+
     Skeleton[] opCall( UserHandler[] handlers, in Skeleton[] skeletons )
     {
         auto table = calcPossibility( handlers, skeletons );
@@ -233,12 +280,20 @@ unittest
     assert( skels0 == tsd([],skels0) );
     UserHandler[] uhlist;
     foreach( i, s; skels0 )
-        uhlist ~= new SimpleUserHandler( User(i,s), 1.0f );
+        uhlist ~= new SimpleUserHandler( User(i,s), SimpleUserHandlerParams(1.0f) );
     auto skels1 = getFakeSkeletons(vec3(0,0.2,0));
     assert( [] == tsd(uhlist,skels1) );
     import std.array;
     auto uhskels = array( map!(a=>a.user.skel)(uhlist) );
     assert( uhskels == skels1 );
+}
+
+struct SimpleMultiTrackerFactoryParams
+{
+    SimpleClassifierParams classifier;
+    SimpleComplexerParams complexer;
+    SimpleDestributorParams destributor;
+    SimpleUserHandlerParams user;
 }
 
 class SimpleMultiTrackerFactory : MultiTrackerFactory
@@ -250,12 +305,15 @@ protected:
 
     float max_user_transform_dist = 1.0f;
 
+    SimpleMultiTrackerFactoryParams params;
+
 public:
-    this()
+    this( in SimpleMultiTrackerFactoryParams smtfp )
     {
-        _classifier = new SimpleClassifier;
-        _complexer = new SimpleComplexer;
-        _destributor = new SimpleDestributor;
+        params = smtfp;
+        _classifier = new SimpleClassifier( params.classifier );
+        _complexer = new SimpleComplexer( params.complexer );
+        _destributor = new SimpleDestributor( params.destributor );
     }
 
     @property
@@ -266,7 +324,7 @@ public:
     }
 
     UserHandler newUserHandler( User user )
-    { return new SimpleUserHandler( user, max_user_transform_dist ); }
+    { return new SimpleUserHandler( user, params.user ); }
 }
 
 version(unittest)
@@ -279,6 +337,7 @@ version(unittest)
             writef( "Skeleton#%d torso: %s ", j, sk.torso.pos.data );
         writeln( " ]" );
     }
+
     static void printSkeletonsDArray( Skeleton[][] arr )
     {
         import std.stdio;
@@ -293,4 +352,3 @@ version(unittest)
         writeln( "  --------- ]" );
     }
 }
-
