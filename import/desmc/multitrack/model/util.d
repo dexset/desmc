@@ -20,6 +20,26 @@ size_t[] getHighQualityIndexes( in Joint[] a, in Joint[] b, float min_qual )
     return res;
 }
 
+vec3[2] calcDistibution( in vec3[] arr )
+{
+    vec3 exp;
+    vec3 var;
+
+    foreach( v; arr ) exp += v;
+    exp /= cast(float)arr.length;
+    foreach( v; arr ) var += (exp - v)^^2;
+    var /= cast(float)(arr.length - 1);
+    return [ exp, var ];
+}
+
+vec3[] calcOffsetInIndexes( in Joint[] a, in Joint[] b, size_t[] hiq )
+{
+    vec3[] res;
+    foreach( index; hiq )
+        res ~= b[index].pos - a[index].pos;
+    return res;
+}
+
 class ClassifierClass
 {
     float min_quality = 0.5;
@@ -32,7 +52,7 @@ class ClassifierClass
         min_quality = min_qual;
     }
 
-    float diff( in Skeleton s )
+    float[2] diff( in Skeleton s )
     {
         auto mj = mean.allJoints();
         auto sj = s.allJoints();
@@ -41,10 +61,11 @@ class ClassifierClass
         auto offset = calcOffsetInIndexes( mj, sj, hiq );
         auto dp = calcDistibution( offset );
 
-        auto res = dp[0].len + sqrt(dp[1].len);
-        res = (res!=res) ? float.max : res;
+        auto exp = dp[0].len;
+        auto dev = sqrt(dp[1].len);
+        exp = (exp!=exp) ? float.max : exp;
 
-        return res;
+        return [exp,dev];
     }
 
     void append( in Skeleton s )
@@ -65,31 +86,13 @@ class ClassifierClass
                 mj[ind].pos = ( ( mj[ind].pos * n ) + sj[ind].pos ) / (n + 1);
                 mj[ind].qual = 1.0f;
             }
+            mean.setJoints(mj);
         }
         else mean = s;
 
         array ~= s;
     }
 
-    vec3[] calcOffsetInIndexes( in Joint[] a, in Joint[] b, size_t[] hiq )
-    {
-        vec3[] res;
-        foreach( index; hiq )
-            res ~= b[index].pos - a[index].pos;
-        return res;
-    }
-
-    static vec3[2] calcDistibution( in vec3[] arr )
-    {
-        vec3 exp;
-        vec3 var;
-
-        foreach( v; arr ) exp += v;
-        exp /= cast(float)arr.length;
-        foreach( v; arr ) var += (exp - v)^^2;
-        var /= cast(float)(arr.length - 1);
-        return [ exp, var ];
-    }
 }
 
 unittest
@@ -98,7 +101,9 @@ unittest
     auto b = getFakeSkeletons(vec3(0,0.1,0),[vec3(0,0,0)])[0];
 
     auto cf = new ClassifierClass;
-    assert( abs( cf.diff(a) - float.max ) < 1e-12 );
+    assert( abs( cf.diff(a)[0] - float.max ) < 1e-12 );
     cf.append( a );
-    assert( cf.diff(b) > 0.0f && cf.diff(b) < 0.1 );
+    import std.stdio;
+    assert( cf.diff(b)[0] > 0.0f && cf.diff(b)[0] < 0.2 );
+    assert( cf.diff(b)[1] < 0.0001f );
 }

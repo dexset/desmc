@@ -7,7 +7,8 @@ import desmc.multitrack.model.util;
 struct SimpleClassifierParams
 {
     float min_point_quality=0.5;
-    float one_class_epsilon=1e5;
+    float class_offset_limit=100;
+    float class_deviation_limit=200;
 }
 
 class SimpleClassifier : Classifier
@@ -35,11 +36,11 @@ class SimpleClassifier : Classifier
     static auto findClass( ClassifierClass[] classes, in Skeleton skel )
     {
         ClassifierClass fnd;
-        float min_diff = float.max;
+        float[2] min_diff = [ float.max, float.max ];
         foreach( cls; classes )
         {
             auto df = cls.diff(skel);
-            if( df < min_diff )
+            if( df[0] < min_diff[0] && df[1] < min_diff[1] )
             {
                 min_diff = df;
                 fnd = cls;
@@ -49,10 +50,11 @@ class SimpleClassifier : Classifier
     }
 
     ClassifierClass processResult( ref ClassifierClass[] classes,
-                                              ClassifierClass cls, float delta )
+                                       ClassifierClass cls, float[2] diff )
     {
         auto ret = cls;
-        if( cls is null || delta > params.one_class_epsilon )
+        if( cls is null || diff[0] > params.class_offset_limit ||
+                           diff[1] > params.class_deviation_limit )
         {
             ret = newClassifierClass();
             classes ~= ret;
@@ -76,7 +78,7 @@ class SimpleClassifier : Classifier
 
 unittest
 {
-    auto tsc = new SimpleClassifier( SimpleClassifierParams(0.5,4) );
+    auto tsc = new SimpleClassifier( SimpleClassifierParams(0.5,2) );
 
     Skeleton[][] by_tracker;
     by_tracker ~= getFakeSkeletons(vec3(0,0,.1));
@@ -109,18 +111,59 @@ class SimpleComplexer : Complexer
 
     Skeleton[] opCall( in Skeleton[][] skels )
     {
+        auto min_qual = 0.5;
         Skeleton[] result;
         foreach( group; skels )
         {
             if( group.length == 0 ) continue;
-            Skeleton buf = group[0];
-            if( group.length > 1 )
+
+            Skeleton mean = group[0];
+            if( group.length < 2 ) { result ~= mean; continue; }
+            size_t n = 1;
+            auto mj = mean.allJoints();
+            foreach( s; group[1 .. $] )
             {
-                size_t n = 1;
-                foreach( s; group[1 .. $] )
-                    buf = skeleton_div( skeleton_add( skeleton_mlt( buf, n ), s ), ++n ); 
+                auto sj = s.allJoints();
+                auto hiq = new ubyte[]( sj.length );
+                foreach( i, ref h; hiq )
+                    h = (mj[i].qual > min_qual)*2 + (sj[i].qual > min_qual);
+                auto offset = new vec3[]( sj.length );
+                vec3 offset_exp;
+                size_t offset_exp_cnt;
+                foreach( i, h; hiq )
+                    if( h == 3 )
+                    {
+                        auto buf = sj[i].pos - mj[i].pos;
+                        offset[i] = buf;
+                        offset_exp += buf;
+                        offset_exp_cnt++;
+                    }
+                offset_exp /= cast(float)offset_exp_cnt;
+                foreach( i, h; hiq )
+                {
+                    if( h == 3 )
+                    {
+                        mj[i].pos = mj[i].pos + offset[i] / ( 1.0f + n );
+                        mj[i].qual = 1.0f;
+                    }
+                    else if( h == 2 )
+                    {
+                        mj[i].qual = 0.75f;
+                    }
+                    else if( h == 1 )
+                    {
+                        mj[i].pos = sj[i].pos;
+                        mj[i].qual = 0.5f;
+                    }
+                    else
+                    {
+                        mj[i].qual = 0.0f;
+                    }
+                }
+                n++;
+                mean.setJoints( mj );
             }
-            result ~= buf;
+            result ~= mean;
         }
         return result;
     }
