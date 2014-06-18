@@ -21,7 +21,7 @@ interface UserHandler
 {
     @property
     {
-        bool updated() const;
+        bool respectable() const;
         ref const(User) user() const;
         bool isOverdue() const;
     }

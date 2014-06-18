@@ -41,7 +41,7 @@ public:
     {
         auto skels = getReadySkeletons();
         destributeSkeletonsToHandlers( skels );
-        return getUpdatedUsers();
+        return getRespectableUsers();
     }
 
 protected:
@@ -90,11 +90,8 @@ protected:
         handlers = good;
     }
 
-    User[] getUpdatedUsers()
+    User[] getRespectableUsers()
     {
-        User[] ret;
-        foreach( uh; filter!( a => a.updated )(handlers) )
-            ret ~= uh.user;
-        return ret;
+        return array( map!(a=>a.user)( filter!(a=>a.respectable)(handlers) ) );
     }
 }
