@@ -205,7 +205,7 @@ public:
 
     @property 
     {
-        bool updated() const { return !is_overdue; }
+        bool respectable() const { return !is_overdue; }
         ref const(User) user() const { return self_user; }
         bool isOverdue() const { return is_overdue; }
     }
@@ -231,7 +231,7 @@ unittest
 {
     auto us0 = getFakeSkeletons(vec3(0,0,0),[vec3(0,0,0)])[0];
     auto tsuh = new SimpleUserHandler( User(0,us0), SimpleUserHandlerParams(1.0f) );
-    assert( tsuh.updated );
+    assert( tsuh.respectable );
     assert( tsuh.user == User(0,us0) );
     assert( !tsuh.isOverdue );
 

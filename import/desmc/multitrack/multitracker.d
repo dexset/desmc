@@ -4,6 +4,7 @@ import desmc.multitrack.model;
 import desmc.core;
 
 import std.algorithm;
+import std.array;
 
 class MultiTracker : Tracker
 {
@@ -55,7 +56,6 @@ protected:
 
     Skeleton[][] getSkeletonsByTrackers()
     {
-        import std.array;
         Skeleton[][] ret;
         foreach( tracker; trackers )
             ret ~= array( map!(a=>a.skel)(tracker.getUsers()) );
@@ -92,6 +92,6 @@ protected:
 
     User[] getRespectableUsers()
     {
-        return array( map!(a=>a.user)( filter!(a=>a.respectable)(handlers) ) );
+        return array( map!(a=>a.user)( filter!(a=>a.respectable)(handlers) ) ).dup;
     }
 }
