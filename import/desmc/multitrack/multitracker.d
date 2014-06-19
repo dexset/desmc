@@ -13,6 +13,7 @@ protected:
     Tracker[] trackers;
     UserHandler[] handlers;
 
+    Heuristic heuristic;
     Classifier classifier;
     Complexer complexer;
     Destributor destributor;
@@ -33,6 +34,7 @@ public:
     void setFactory( MultiTrackerFactory gtf )
     {
         factory = gtf;
+        heuristic = factory.heuristic;
         classifier = factory.classifier;
         complexer = factory.complexer;
         destributor = factory.destributor;
@@ -58,7 +60,7 @@ protected:
     {
         Skeleton[][] ret;
         foreach( tracker; trackers )
-            ret ~= array( map!(a=>a.skel)(tracker.getUsers()) );
+            ret ~= array( map!(a=>heuristic(a.skel))(tracker.getUsers()) );
         return ret;
     }
 

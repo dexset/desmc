@@ -4,6 +4,20 @@ import desmc.multitrack.model;
 import std.algorithm;
 import desmc.multitrack.model.util;
 
+struct SimpleHeuristicParams
+{
+
+}
+
+class SimpleHeuristic : Heuristic
+{
+    Skeleton opCall( in Skeleton skel )
+    {
+        // TODO
+        return skel;
+    }
+}
+
 struct SimpleClassifierParams
 {
     float min_point_quality=0.5;
@@ -333,6 +347,7 @@ unittest
 
 struct SimpleMultiTrackerFactoryParams
 {
+    SimpleHeuristicParams heuristic;
     SimpleClassifierParams classifier;
     SimpleComplexerParams complexer;
     SimpleDestributorParams destributor;
@@ -342,6 +357,7 @@ struct SimpleMultiTrackerFactoryParams
 class SimpleMultiTrackerFactory : MultiTrackerFactory
 {
 protected:
+    Heuristic _heuristic;
     Classifier _classifier;
     Complexer _complexer;
     Destributor _destributor;
@@ -361,6 +377,7 @@ public:
 
     @property
     {
+        Heuristic heuristic() { return _heuristic; }
         Classifier classifier() { return _classifier; }
         Complexer complexer() { return _complexer; }
         Destributor destributor() { return _destributor; }

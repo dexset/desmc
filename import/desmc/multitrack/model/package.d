@@ -2,6 +2,12 @@ module desmc.multitrack.model;
 
 public import desmc.core;
 
+/+ пересчитывает значения qual для joint'ов +/
+interface Heuristic
+{
+    Skeleton opCall( in Skeleton );
+}
+
 /+ классифицирует по группам скелеты с разных трекеров 
    на выходе массив из групп скелетов, относящихся 
    к одному пользователю +/
@@ -44,6 +50,7 @@ interface MultiTrackerFactory
 {
     @property
     {
+        Heuristic heuristic();
         Classifier classifier();
         Complexer complexer();
         Destributor destributor();
