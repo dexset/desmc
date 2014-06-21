@@ -11,6 +11,13 @@ struct SimpleHeuristicParams
 
 class SimpleHeuristic : Heuristic
 {
+    SimpleHeuristicParams params;
+
+    this( SimpleHeuristicParams shp )
+    {
+        params = shp;
+    }
+
     Skeleton opCall( in Skeleton skel )
     {
         // TODO
@@ -370,6 +377,7 @@ public:
     this( in SimpleMultiTrackerFactoryParams smtfp )
     {
         params = smtfp;
+        _heuristic = new SimpleHeuristic( params.heuristic );
         _classifier = new SimpleClassifier( params.classifier );
         _complexer = new SimpleComplexer( params.complexer );
         _destributor = new SimpleDestributor( params.destributor );
