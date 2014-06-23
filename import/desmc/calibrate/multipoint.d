@@ -101,34 +101,43 @@ unittest
     assert( all!(a=>a.len2<0.1)( map!(a=>a[0]-a[1])( zip(bmpc.points, res) ) ) );
 }
 
+interface MultiPointCalibratorPrinter
+{
+    void nextPoint();
+    void accepted(size_t,PointCalibrationResult);
+    void aborted(size_t,PointCalibrationResult);
+    void done(in vec3[]);
+}
+
 class CBMultiPointCalibrator : BaseMultiPointCalibrator
 {
-    this( size_t point_count, in PointCalibratorParam pcp ) { super( point_count, pcp ); }
+    MultiPointCalibratorPrinter printer;
 
-    alias void delegate() EmptyCallback;
-    alias void delegate(size_t, PointCalibrationResult) FilterCallback;
-    alias void delegate( in vec3[] ) ResultCallback;
-
-    EmptyCallback next_point_callback;
-    FilterCallback accepted_callback;
-    FilterCallback aborted_callback;
-    ResultCallback done_callback;
+    this( size_t point_count, in PointCalibratorParam pcp,
+            MultiPointCalibratorPrinter prntr=null ) 
+    {
+        super( point_count, pcp );
+        printer = prntr;
+    }
 
     override PointCalibrationResult filter( in fSeg seg )
     {
         auto res = super.filter( seg );
-        if( res.state == PointCalibrationResult.State.ACCEPTED &&
-                accepted_callback ) accepted_callback( currentIndex, res );
-        if( res.state == PointCalibrationResult.State.ABORTED &&
-                aborted_callback ) aborted_callback( currentIndex, res );
-        if( done && done_callback ) done_callback( points );
+        if( printer )
+        {
+            if( res.state == PointCalibrationResult.State.ACCEPTED )
+                printer.accepted( currentIndex, res );
+            if( res.state == PointCalibrationResult.State.ABORTED ) 
+                printer.aborted( currentIndex, res );
+            if( done ) printer.done( points );
+        }
         return res;
     }
 
     override void nextPoint()
     {
         super.nextPoint();
-        if( next_point_callback ) next_point_callback();
+        if( printer ) printer.nextPoint();
     }
 }
 
