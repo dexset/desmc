@@ -7,7 +7,7 @@ public import desmath.linear;
 
 import desmath.basic.traits;
 
-import desmc.calibrate.filterbuffer;
+import desmc.calibrate.filter;
 public import desmc.calibrate.util;
 
 class CalibratorException : Exception
@@ -107,7 +107,7 @@ protected:
                 auto alpha = acos(a^b);
                 auto norm = (a * b).e;
                 auto mv = list[i].start - list[j].start;
-                sum += sin( alpha ) / ( 1.0f + (norm ^ mv) );
+                sum += sin(alpha) / ( 1.0f + abs(norm ^ mv) );
             }
         return sum;
     }
@@ -126,7 +126,7 @@ protected:
     }
 
     bool checkQuality( float quality ) const
-    { return quality > params.min_quality || !isResultable(); }
+    { return quality > params.min_quality || !result_ray.length; }
 
     bool checkStability( float stability ) const
     { return stability > params.min_stability && fbuffer.isFilled; }
@@ -179,4 +179,20 @@ unittest
     assert( q.point );
     assert( q.point == pc.point );
     assert( (pc.point - vec3(.5,.5,-.5)).len2 < 0.1 );
+}
+
+unittest
+{
+    auto pc = new PointCalibrator( PointCalibratorParam(20, 0.15) );
+    auto r1 = fSeg( vec3(0,0,0), vec3(1,1,0) );
+    PointCalibrationResult q;
+    while( q.state != PointCalibrationResult.State.ACCEPTED ) 
+        q = pc.filter( r1 + rndSeg() );
+
+    while( q.state != PointCalibrationResult.State.ABORTED ) 
+    {
+        q = pc.filter( r1 + rndSeg() );
+        assert( q.quality < 0.1 );
+    }
+    assert( q.state == PointCalibrationResult.State.ABORTED );
 }

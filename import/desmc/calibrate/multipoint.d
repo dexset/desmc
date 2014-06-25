@@ -65,7 +65,7 @@ unittest
 
     vec3[] res = [ vec3(1,1,0), vec3(2,4,0) ];
 
-    auto bmpc = new BaseMultiPointCalibrator( 2, PointCalibratorParam(10,0.15,0.5,0.9) );
+    auto bmpc = new BaseMultiPointCalibrator( 2, PointCalibratorParam(10,0.15,0.4,0.9) );
 
     bool normalCalcFirstPoint = false;
     foreach( i; 0 .. 20 )
@@ -73,7 +73,7 @@ unittest
         auto q = bmpc.filter( rays[cur_ray] + rndSeg() );
         if( q.state == PointCalibrationResult.State.ACCEPTED )
         {
-            assert( i > 8 && i < 12 );
+            assert( abs( i - 10 ) < 2 );
             normalCalcFirstPoint = true;
             break;
         }
@@ -83,12 +83,14 @@ unittest
     void appendNextRay()
     {
         cur_ray++;
-        while( bmpc.filter( rays[cur_ray] + rndSeg() ).state != 
-                PointCalibrationResult.State.ACCEPTED ) {}
+        foreach( i; 0 .. 20 )
+        {
+            auto yx = bmpc.filter( rays[cur_ray] + rndSeg() );
+            if( yx.state == PointCalibrationResult.State.ACCEPTED ) break;
+        }
     }
 
     appendNextRay();
-
     assert( !bmpc.done );
     assert( bmpc.currentIndex == 0 );
     bmpc.nextPoint();
@@ -185,13 +187,18 @@ unittest
 
     vec3[] res = [ vec3(1,1,0), vec3(2,4,0) ];
 
-    auto cbmpc = new CBMultiPointCalibrator( 2, PointCalibratorParam(10,0.15) );
     size_t next_point_call_count = 0;
-    cbmpc.next_point_callback = ()
-    { 
-        next_point_call_count++; 
-    };
-    cbmpc.accepted_callback = (size_t i, PointCalibrationResult pcr) { cur_ray++; };
+
+    class TestPrinter : MultiPointCalibratorPrinter
+    {
+        void nextPoint() { next_point_call_count++; }
+        void accepted(size_t,PointCalibrationResult) { cur_ray++; }
+        void aborted(size_t,PointCalibrationResult) {}
+        void done(in vec3[]) {}
+    }
+
+    auto buf_len = 10;
+    auto cbmpc = new CBMultiPointCalibrator( 2, PointCalibratorParam(buf_len,0.15,0.4), new TestPrinter );
     auto eachmp = new EachMultiPointCalibrator( cbmpc );
 
     size_t steps = 0;
@@ -200,7 +207,7 @@ unittest
         steps++;
         eachmp.filter( rays[cur_ray]+rndSeg() );
     }
-    assert( steps > 39 && steps < 45 );
+    assert( abs( steps - buf_len * 4 ) < 3 );
     assert( next_point_call_count == 2 );
     import std.range;
     assert( all!(a=>a.len2<0.1)( map!(a=>a[0]-a[1])( zip(eachmp.points, res) ) ) );
