@@ -1,4 +1,4 @@
-module desmc.calibrate.filterbuffer;
+module desmc.calibrate.filter;
 
 import desmc.calibrate.util;
 
