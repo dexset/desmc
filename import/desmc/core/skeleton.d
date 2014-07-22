@@ -3,6 +3,7 @@ module desmc.core.skeleton;
 import std.stdio;
 import std.string;
 import std.algorithm;
+import std.traits;
 public import desmath.linear;
 
 struct Joint
@@ -35,7 +36,7 @@ struct Skeleton
         RIGHT_FOOT
     }
 
-    enum JointCount = JointID.max-JointID.min+1;
+    enum JointCount = [EnumMembers!JointID].length;
 
     private Joint[JointCount] joints;
 
