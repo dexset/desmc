@@ -1,7 +1,7 @@
-module desmc.multitrack.multitracker;
+module des.mc.multitrack.multitracker;
 
-import desmc.multitrack.model;
-import desmc.core;
+import des.mc.multitrack.model;
+import des.mc.core;
 
 import std.algorithm;
 import std.array;

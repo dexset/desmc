@@ -1,8 +1,8 @@
-module desmc.multitrack.model.simple;
+module des.mc.multitrack.model.simple;
 
-import desmc.multitrack.model;
+import des.mc.multitrack.model;
 import std.algorithm;
-import desmc.multitrack.model.util;
+import des.mc.multitrack.model.util;
 
 struct SimpleHeuristicParams
 {

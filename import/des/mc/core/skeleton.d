@@ -1,10 +1,10 @@
-module desmc.core.skeleton;
+module des.mc.core.skeleton;
 
 import std.stdio;
 import std.string;
 import std.algorithm;
 import std.traits;
-public import desmath.linear;
+public import des.math.linear;
 
 struct Joint
 {

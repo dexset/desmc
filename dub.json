@@ -1,5 +1,5 @@
 {
-	"name": "descm",
+	"name": "desmc",
     "description": "D Extended Set MoCapture",
     "authors": ["Oleg Butko(deviator)", "Anton Akzhigitov(Akzwar)"],
     "license": "MIT",
@@ -7,6 +7,6 @@
 	"importPaths": [ "import" ],
 	"sourcePaths": [ "import" ],
     "dependencies": {
-        "descore": "~master"
+        "descore": "1.0.11"
     }
 }

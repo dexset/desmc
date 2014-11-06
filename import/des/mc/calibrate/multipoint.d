@@ -1,7 +1,7 @@
-module desmc.calibrate.multipoint;
+module des.mc.calibrate.multipoint;
 
-import desmc.calibrate.point;
-import desmc.calibrate.util;
+import des.mc.calibrate.point;
+import des.mc.calibrate.util;
 
 float toRad( float deg ) pure nothrow { return deg / 180.0 * PI; }
 
@@ -248,6 +248,6 @@ protected:
 
         auto a = last_ray.dir.e;
         auto b = ray.dir.e;
-        return acos(a^b) > min_next_point_angle;
+        return acos(dot( a, b )) > min_next_point_angle;
     }
 }

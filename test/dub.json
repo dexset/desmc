@@ -6,6 +6,6 @@
     "sourcePaths": [ ".", "../import/" ],
     "importPaths": [ "../import/" ],
     "dependencies": {
-        "descore": "~master"
+        "descore": "1.0.9"
     }
 }

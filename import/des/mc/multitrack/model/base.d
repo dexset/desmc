@@ -1,7 +1,7 @@
-module desmc.multitrack.model.base;
+module des.mc.multitrack.model.base;
 
-import desmc.multitrack.model;
-import desmc.multitrack.model.util;
+import des.mc.multitrack.model;
+import des.mc.multitrack.model.util;
 
 /+ TODO: WIP
 

@@ -1,6 +1,6 @@
-module desmc.calibrate.util;
+module des.mc.calibrate.util;
 
-public import desmath.linear;
+public import des.math.linear;
 
 /+ expected value: мат. ожидание +/
 @property fSeg expected( in fSeg[] buf )
@@ -55,7 +55,7 @@ unittest
 
 version(unittest)
 {
-    private import desmath.method.stat.randn;
+    private import des.math.method.stat.randn;
     private auto v = [ 
         -0.779237,  0.095773,  0.794196,  0.037817,  0.243846, -0.610992,  
          0.894963,  0.760108,  0.456166,  0.091022,  0.544440, -0.104452,  

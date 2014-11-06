@@ -1,6 +1,6 @@
-module desmc.calibrate.filter;
+module des.mc.calibrate.filter;
 
-import desmc.calibrate.util;
+import des.mc.calibrate.util;
 
 class FilterBuffer(T)
     if( is( typeof( (T[]).init.expected ) == T ) && is( typeof( T[].init.variance(T.init) ) == T ) )

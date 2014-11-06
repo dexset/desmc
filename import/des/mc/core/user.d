@@ -1,6 +1,6 @@
-module desmc.core.user;
+module des.mc.core.user;
 
-public import desmc.core.skeleton;
+public import des.mc.core.skeleton;
 
 struct User
 {

@@ -1,6 +1,6 @@
-module desmc.multitrack.model;
+module des.mc.multitrack.model;
 
-public import desmc.core;
+public import des.mc.core;
 
 /+ пересчитывает значения qual для joint'ов +/
 interface Heuristic

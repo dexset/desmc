@@ -1,7 +1,7 @@
-module desmc.core.tracker;
+module des.mc.core.tracker;
 
-import desmc.core.skeleton;
-import desmc.core.user;
+import des.mc.core.skeleton;
+import des.mc.core.user;
 
 interface Tracker
 {
@@ -70,11 +70,14 @@ public:
 
 unittest
 {
-    import desmath.linear.camera;
-    auto mtr = _lookAt( vec3(0,-1,0), vec3(0,-1,-1), vec3(0,1,0) );
+    auto ltr = new LookAtTransform;
+    ltr.pos = vec3( 0, -1, 0 );
+    ltr.target = vec3( 0, -1, -1 );
+    ltr.up = vec3( 0, 1, 0 );
+
     auto ft = new FakeTracker;
-    auto mtt = new MatrixTransformTracker( ft, mtr );
+    auto mtt = new MatrixTransformTracker( ft, ltr.matrix );
     auto uu = ft.getUsers();
     auto ut = mtt.getUsers();
-    assert( ut[0].skel.head.pos == (mtr * vec4(uu[0].skel.head.pos,1.0) ).xyz );
+    assert( ut[0].skel.head.pos == (ltr.matrix * vec4(uu[0].skel.head.pos,1.0) ).xyz );
 }

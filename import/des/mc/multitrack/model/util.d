@@ -1,8 +1,8 @@
-module desmc.multitrack.model.util;
+module des.mc.multitrack.model.util;
 import std.algorithm;
 import std.array;
 
-import desmc.core;
+import des.mc.core;
 import std.math;
 
 T[] plainArray(T)( in T[][] arr )

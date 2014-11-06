@@ -1,14 +1,14 @@
-module desmc.calibrate.point;
+module des.mc.calibrate.point;
 
 public import std.math;
 public import std.algorithm;
 public import std.array;
-public import desmath.linear;
+public import des.math.linear;
 
-import desmath.basic.traits;
+import des.math.basic.traits;
 
-import desmc.calibrate.filter;
-public import desmc.calibrate.util;
+import des.mc.calibrate.filter;
+public import des.mc.calibrate.util;
 
 class CalibratorException : Exception
 {
@@ -104,10 +104,10 @@ protected:
             {
                 auto a = list[i].dir.e;
                 auto b = list[j].dir.e;
-                auto alpha = acos(a^b);
-                auto norm = (a * b).e;
+                auto alpha = acos(dot(a,b));
+                auto norm = (cross(a, b)).e;
                 auto mv = list[i].start - list[j].start;
-                sum += sin(alpha) / ( 1.0f + abs(norm ^ mv) );
+                sum += sin(alpha) / ( 1.0f + abs(dot( norm, mv )) );
             }
         return sum;
     }

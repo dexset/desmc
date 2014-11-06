@@ -1,5 +1,5 @@
 import std.stdio;
-import desmc;
+import des.mc;
 
 void main()
 {
