@@ -1,11 +1,11 @@
 {
-	"name": "desmc",
+    "name": "desmc",
     "description": "D Extended Set MoCapture",
     "authors": ["Oleg Butko(deviator)", "Anton Akzhigitov(Akzwar)"],
     "license": "MIT",
-	"targetType": "sourceLibrary",
-	"importPaths": [ "import" ],
-	"sourcePaths": [ "import" ],
+    "targetType": "sourceLibrary",
+    "importPaths": [ "import" ],
+    "sourcePaths": [ "import" ],
     "dependencies": {
         "descore": "1.0.11"
     }
