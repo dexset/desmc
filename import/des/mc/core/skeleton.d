@@ -237,7 +237,7 @@ private
 
         string type = arrayType.stringof;
 
-        foreach( e; Enum.min .. Enum.max )
+        foreach( e; [EnumMembers!(Skeleton.JointID)] )
         {
             string id = format("%s.%s",Enum.stringof,e);
             string name = toProperName( id );
