@@ -42,11 +42,18 @@ struct Skeleton
 
     mixin( accessArray!("joints",Joint,JointID) );
 
-    auto transform( in mat4 mtr ) const
+    auto transform( in mat4 mtr, bool mirror = false ) const
     {
         Skeleton ret;
         foreach( i, j; joints )
+        {
             ret.joints[i] = Joint( (mtr * vec4(j.pos,1.0)).xyz, j.qual );
+            if( mirror )
+            {
+                ret.joints[i].pos.x *= -1;
+            }
+        }
+
         return ret;
     }
 
