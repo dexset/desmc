@@ -42,17 +42,14 @@ struct Skeleton
 
     mixin( accessArray!("joints",Joint,JointID) );
 
-    auto transform( in mat4 mtr, bool mirror = false ) const
+    auto transform( in mat4 mtr, JointID[] jj = [] ) const
     {
         Skeleton ret;
-        foreach( i, j; joints )
-        {
-            ret.joints[i] = Joint( (mtr * vec4(j.pos,1.0)).xyz, j.qual );
-            if( mirror )
-            {
-                ret.joints[i].pos.x *= -1;
-            }
-        }
+        auto en = cast(JointID[])[EnumMembers!JointID];
+        if( jj.length )
+            en = jj;
+        foreach( i; en )
+            ret.joints[i] = Joint( (mtr * vec4(joints[i].pos,1.0)).xyz, joints[i].qual );
 
         return ret;
     }
@@ -165,6 +162,27 @@ unittest
     auto ts = Skeleton.fromJoints( pose_norm );
     assert( pose_norm[Skeleton.JointID.HEAD] == ts.head );
     assert( pose_norm[Skeleton.JointID.RIGHT_HAND] == ts.rightHand );
+}
+
+unittest
+{
+    auto tr = mat4( 1.0, 0.0, 0.0, 1.0,
+                    0.0, 1.0, 0.0, 0.0,
+                    0.0, 0.0, 1.0, 0.0,
+                    0.0, 0.0, 0.0, 1.0 );
+    auto skel = Skeleton.fromJoints( pose_norm );
+    auto tr_skel = skel.transform( tr );
+    foreach( i, j; tr_skel.joints )
+        assert( j.pos.x == skel.joints[i].pos.x + 1 );
+    tr_skel = skel.transform( tr, [Skeleton.JointID.RIGHT_HAND, Skeleton.JointID.LEFT_HAND] );
+
+    foreach( i, j; tr_skel.joints )
+    {
+        if( i == Skeleton.JointID.RIGHT_HAND || i == Skeleton.JointID.LEFT_HAND )
+            assert( j.pos.x == skel.joints[i].pos.x + 1 );
+        else
+            assert( j.pos.x == skel.joints[i].pos.x );
+    }
 }
 
 Skeleton skeleton_mlt( in Skeleton s, float v )
