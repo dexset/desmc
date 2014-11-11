@@ -267,8 +267,8 @@ private
             string id = format("%s.%s",Enum.stringof,e);
             string name = toProperName( id );
             string access = format( "%s[%s]", arrayName, id );
-            ret ~= format( "@property ref const(%1$s) %2$s() const { return %3$s; }\n" ~
-                        "@property void %2$s( in %1$s v ) { %3$s = v; }",
+            ret ~= format( "@property ref %1$s %2$s() { return %3$s; }\n" ~ 
+                           "@property ref const(%1$s) %2$s() const { return %3$s; }\n",
                         type, name, access );
         }
 
